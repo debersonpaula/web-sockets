@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "lib": ["es5", "es2015", "es6", "dom"],
+    "noImplicitAny": true,
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "target": "es5",
+    "moduleResolution": "node"
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules"]
+}
