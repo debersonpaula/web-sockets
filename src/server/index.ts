@@ -1,5 +1,5 @@
-import { ServerSocket } from '../lib/ServerSocket';
 import crypto from 'crypto';
+import { ServerSocket } from '../lib/server/ServerSocket';
 
 const port = 16000;
 

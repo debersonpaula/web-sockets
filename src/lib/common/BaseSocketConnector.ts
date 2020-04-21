@@ -1,9 +1,6 @@
-import { IPacket } from './IPacket';
+import { IPacket } from '../interfaces/IPacket';
 
 export class BaseSocketConnector {
-  public onError: () => void;
-  public onClose: () => void;
-  public onOpen: () => void;
   private _listeners: { [command: string]: TSocketResponse } = {};
   protected _send: TSocketResponse;
 

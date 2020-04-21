@@ -1,6 +1,6 @@
 import ws from 'ws';
 import * as http from 'http';
-import { IPacket } from './IPacket';
+import { IPacket } from '../interfaces/IPacket';
 
 export class ServerSocket<T> {
   public onListening: () => void;
@@ -74,10 +74,12 @@ export class ServerSocket<T> {
     }
   }
 
+  // LIST OF CLIENTS
   public get clients() {
     return this._socket.clients as Set<CustomSocket<T>>;
   }
 
+  // RECEIVE DATA FROM ONMESSAGE EVENT
   private _receive(conn: CustomSocket<T>, socketData: string) {
     const receivedPackage: IPacket<any> = JSON.parse(socketData);
     const command = this._listeners[receivedPackage.command];

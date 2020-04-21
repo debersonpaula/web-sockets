@@ -1,4 +1,4 @@
-import { ClientSocket } from '../lib/ClientSocket';
+import { ClientSocket } from '../lib/client/ClientSocket';
 
 const user = document.getElementById('user') as HTMLInputElement;
 const message = document.getElementById('message') as HTMLInputElement;
