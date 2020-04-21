@@ -1,26 +1,25 @@
 import ws from 'ws';
 import * as http from 'http';
 import { IPacket } from '../interfaces/IPacket';
+import { ClientConnection } from './ClientConnection';
+import { TSocketData } from '../interfaces/TSocketData';
 
 export class ServerSocket<T> {
   public onListening: () => void;
   public onError: (err: Error) => void;
   public onAddConnection: (req: http.IncomingMessage) => T;
-  public onMessage: (conn: CustomSocket<T>, message: ws.Data) => void;
-  public onClose: (conn: CustomSocket<T>) => void;
+  public onClose: (conn: ClientConnection<T>) => void;
   private _socket: ws.Server;
   private _listeners: {
-    [command: string]: (conn: CustomSocket<T>, responseData: any) => void;
+    [command: string]: (conn: ClientConnection<T>, response: any) => void;
   } = {};
 
   // listen to a method
   public subscribe<R>(
     command: string,
-    callback: (conn: CustomSocket<T>, response: R) => void
+    callback: (conn: ClientConnection<T>, response: R) => void
   ) {
-    this._listeners[command] = (conn, responseData) => {
-      callback(conn, responseData);
-    };
+    this._listeners[command] = callback;
   }
 
   // START SERVER
@@ -40,28 +39,21 @@ export class ServerSocket<T> {
     });
     // --- connection -------------------
     this._socket.on('connection', (conn: CustomSocket<T>, req) => {
-      // assign methods
-      conn.isOpen = () => conn.readyState === ws.OPEN;
-      conn.sendData = (command: string, data: any) => {
-        const packet: IPacket<any> = {
-          command,
-          data,
-        };
-        conn.send(JSON.stringify(packet));
-      };
+      const initialData = this.onAddConnection
+        ? this.onAddConnection(req)
+        : null;
 
-      if (this.onAddConnection) {
-        conn.data = this.onAddConnection(req);
-      }
-      conn.on('message', (message) => {
-        if (this.onMessage) {
-          this.onMessage(conn, message);
-        }
-        this._receive(conn, message.toString());
-      });
+      const client = new ClientConnection<T>(
+        conn,
+        initialData,
+        this._receive.bind(this)
+      );
+
+      conn.client = client;
+
       conn.on('close', () => {
         if (this.onClose) {
-          this.onClose(conn);
+          this.onClose(client);
         }
       });
     });
@@ -76,21 +68,23 @@ export class ServerSocket<T> {
 
   // LIST OF CLIENTS
   public get clients() {
-    return this._socket.clients as Set<CustomSocket<T>>;
+    const clientList: ClientConnection<T>[] = [];
+    this._socket.clients.forEach((conn: CustomSocket<T>) => {
+      clientList.push(conn.client);
+    });
+    return clientList;
   }
 
   // RECEIVE DATA FROM ONMESSAGE EVENT
-  private _receive(conn: CustomSocket<T>, socketData: string) {
-    const receivedPackage: IPacket<any> = JSON.parse(socketData);
+  private _receive(connection: ClientConnection<T>, data: TSocketData) {
+    const receivedPackage: IPacket<any> = JSON.parse(data.toString());
     const command = this._listeners[receivedPackage.command];
     if (command) {
-      command(conn, receivedPackage.data);
+      command(connection, receivedPackage.data);
     }
   }
 }
 
 interface CustomSocket<T> extends ws {
-  data: T;
-  sendData: <R>(command: string, data: R) => void;
-  isOpen: () => boolean;
+  client: ClientConnection<T>;
 }

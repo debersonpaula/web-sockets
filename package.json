@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/ws": "^7.2.4",
+    "@types/ws": "7.2.4",
     "html-webpack-plugin": "4.2.0",
     "ts-loader": "7.0.0",
     "tslint": "6.1.1",

@@ -1,8 +1,9 @@
 import { IPacket } from '../interfaces/IPacket';
+import { TSocketReceiverHandler } from '../interfaces/TSocketReceiverHandler';
 
 export class BaseSocketConnector {
-  private _listeners: { [command: string]: TSocketResponse } = {};
-  protected _send: TSocketResponse;
+  private _listeners: { [command: string]: TSocketReceiverHandler } = {};
+  protected _send: TSocketReceiverHandler;
 
   public send<T>(command: string, data: T) {
     if (this._send) {
@@ -28,5 +29,3 @@ export class BaseSocketConnector {
     }
   }
 }
-
-type TSocketResponse = (data: any) => void;

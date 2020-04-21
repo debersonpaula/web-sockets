@@ -30,8 +30,8 @@ server.onAddConnection = (req) => {
   };
 };
 // Event to Close
-server.onClose = (conn) => {
-  broadcast(`[${conn.data.name}] disconnected`);
+server.onClose = (client) => {
+  broadcast(`[${client.data.name}] disconnected`);
 };
 // Event to command USER
 server.subscribe<string>('USER', (conn, resp) => {
@@ -48,7 +48,7 @@ server.open({ port });
 function broadcast(msg: string) {
   server.clients.forEach((client) => {
     if (client.isOpen()) {
-      client.sendData('MESSAGE', msg);
+      client.send('MESSAGE', msg);
     }
   });
 }
